@@ -12,11 +12,18 @@ const port=process.env.PORT||3000
 
 app.use(express.static(publicDirectoryPath))
 
-io.on('connection',(socket)=>{
+io.on('connection',(socket)=>{//when a client is connected
     console.log('New websocket connection')
-    socket.emit('message','Welcome!')
+    
+    socket.emit('message','Welcome!')//emit to a particular
+    socket.broadcast.emit('message','A new user has joined!')//emit all except the one
+    
     socket.on('sendMessage',(message)=>{
-        io.emit('message',message)
+        io.emit('message',message)//emit all
+    })
+
+    socket.on('disconnect',()=>{//when a clent is disconnected
+        io.emit('message','A user has left!')
     })
 })
 
