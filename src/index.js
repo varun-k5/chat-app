@@ -2,6 +2,7 @@ const express=require('express')
 const path=require('path')
 const http=require('http')
 const socketio=require('socket.io')
+const Filter=require('bad-words')
 
 const app=express()
 const server=http.createServer(app)
@@ -18,14 +19,20 @@ io.on('connection',(socket)=>{//when a client is connected
     socket.emit('message','Welcome!')//emit to a particular
     socket.broadcast.emit('message','A new user has joined!')//emit all except the one
     
-    socket.on('sendMessage',(message)=>{
+    socket.on('sendMessage',(message,callback)=>{
+        const filter=new Filter()
+        if(filter.isProfane(message)){
+            return callback('Profanity is not allowed!')
+        }
+        
         io.emit('message',message)//emit all
+        callback()
     })
 
-    socket.on('sendLocation',(coords)=>{
+    socket.on('sendLocation',(coords,callback)=>{
         io.emit('message',`https://google.com/maps?q=${coords.latitude},${coords.longitude}`)
         //io.emit('message',`Location: ${coords.latitude}, ${coords.longitude}`)
-
+        callback()
     })
 
     socket.on('disconnect',()=>{//when a clent is disconnected
