@@ -3,6 +3,7 @@ const path=require('path')
 const http=require('http')
 const socketio=require('socket.io')
 const Filter=require('bad-words')
+const {generateMessage, generateLocationMessage}=require('./utils/messages')
 
 const app=express()
 const server=http.createServer(app)
@@ -16,8 +17,8 @@ app.use(express.static(publicDirectoryPath))
 io.on('connection',(socket)=>{//when a client is connected
     console.log('New websocket connection')
     
-    socket.emit('message','Welcome!')//emit to a particular
-    socket.broadcast.emit('message','A new user has joined!')//emit all except the one
+    socket.emit('message',generateMessage('Welcome!'))//emit to a particular
+    socket.broadcast.emit('message',generateMessage('A new user has joined!'))//emit all except the one
     
     socket.on('sendMessage',(message,callback)=>{
         const filter=new Filter()
@@ -25,18 +26,18 @@ io.on('connection',(socket)=>{//when a client is connected
             return callback('Profanity is not allowed!')
         }
         
-        io.emit('message',message)//emit all
+        io.emit('message',generateMessage(message))//emit all
         callback()
     })
     
     socket.on('sendLocation',(coords,callback)=>{
-        io.emit('locationMessage',`https://google.com/maps?q=${coords.latitude},${coords.longitude}`)
+        io.emit('locationMessage',generateLocationMessage(`https://google.com/maps?q=${coords.latitude},${coords.longitude}`))
         //io.emit('message',`Location: ${coords.latitude}, ${coords.longitude}`)
         callback()
     })
 
     socket.on('disconnect',()=>{//when a clent is disconnected
-        io.emit('message','A user has left!')
+        io.emit('message',generateMessage('A user has left!'))
     })
 })
 
