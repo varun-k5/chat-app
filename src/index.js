@@ -16,10 +16,14 @@ app.use(express.static(publicDirectoryPath))
 
 io.on('connection',(socket)=>{//when a client is connected
     console.log('New websocket connection')
-    
-    socket.emit('message',generateMessage('Welcome!'))//emit to a particular
-    socket.broadcast.emit('message',generateMessage('A new user has joined!'))//emit all except the one
-    
+        
+    socket.on('join',({username,room})=>{
+        socket.join(room)
+
+        socket.emit('message',generateMessage('Welcome!'))//emit to a particular
+        socket.broadcast.to(room).emit('message',generateMessage(`${username} has joined!`))//emit all except the one
+    })
+
     socket.on('sendMessage',(message,callback)=>{
         const filter=new Filter()
         if(filter.isProfane(message)){
