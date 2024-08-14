@@ -25,26 +25,29 @@ io.on('connection',(socket)=>{//when a client is connected
         if(error){
             return callback(error)
         }
-        
+
         socket.join(user.room)
 
-        socket.emit('message',generateMessage('Welcome!'))//emit to a particular
-        socket.broadcast.to(user.room).emit('message',generateMessage(`${user.username} has joined!`))//emit all except the one
+        socket.emit('message',generateMessage('Admin','Welcome!'))//emit to a particular
+        socket.broadcast.to(user.room).emit('message',generateMessage('Admin',`${user.username} has joined!`))//emit all except the one
         callback()
     })
 
     socket.on('sendMessage',(message,callback)=>{
+        const user=getUser(socket.id)
+
         const filter=new Filter()
         if(filter.isProfane(message)){
             return callback('Profanity is not allowed!')
         }
         
-        io.emit('message',generateMessage(message))//emit all
+        io.to(user.room).emit('message',generateMessage(user.username,message))//emit all
         callback()
     })
     
     socket.on('sendLocation',(coords,callback)=>{
-        io.emit('locationMessage',generateLocationMessage(`https://google.com/maps?q=${coords.latitude},${coords.longitude}`))
+        const user=getUser(socket.id)
+        io.to(user.room).emit('locationMessage',generateLocationMessage(user.username,`https://google.com/maps?q=${coords.latitude},${coords.longitude}`))
         //io.emit('message',`Location: ${coords.latitude}, ${coords.longitude}`)
         callback()
     })
@@ -52,7 +55,7 @@ io.on('connection',(socket)=>{//when a client is connected
     socket.on('disconnect',()=>{//when a clent is disconnected
         const user=removeUser(socket.id)
         if(user){
-            io.to(user.room).emit('message',generateMessage(`${user.username} has left!`))
+            io.to(user.room).emit('message',generateMessage('Admin',`${user.username} has left!`))
         }
     })
 })
