@@ -30,6 +30,10 @@ io.on('connection',(socket)=>{//when a client is connected
 
         socket.emit('message',generateMessage('Admin','Welcome!'))//emit to a particular
         socket.broadcast.to(user.room).emit('message',generateMessage('Admin',`${user.username} has joined!`))//emit all except the one
+        io.to(user.room).emit('roomData',{
+            room:user.room,
+            users:getUsersInRoom(user.room)
+        })
         callback()
     })
 
@@ -56,6 +60,10 @@ io.on('connection',(socket)=>{//when a client is connected
         const user=removeUser(socket.id)
         if(user){
             io.to(user.room).emit('message',generateMessage('Admin',`${user.username} has left!`))
+            io.to(user.room).emit('roomData',{
+                room:user.room,
+                users:getUsersInRoom(user.room)
+            })
         }
     })
 })
